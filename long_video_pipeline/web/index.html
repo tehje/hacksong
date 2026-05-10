@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Video Agent</title>
+  <link rel="stylesheet" href="/ui/styles.css?v=20260404j" />
+</head>
+<body data-theme="modern">
+  <div id="layoutModern" class="layout layout-modern">
+    <div id="modernSidebarOverlay" class="modern-sidebar-overlay" aria-hidden="true"></div>
+
+    <aside class="gemini-rail">
+      <div id="modernSidebarSlot"></div>
+    </aside>
+
+    <section class="gemini-main">
+      <div id="modernHeaderSlot"></div>
+      <div id="modernContentSlot"></div>
+    <div id="modernLogSlot"></div>
+    </section>
+  </div>
+
+  <div id="layoutPtt" class="layout layout-ptt" hidden>
+    <canvas id="pttMatrixCanvas" class="ptt-matrix-canvas" aria-hidden="true"></canvas>
+    <div class="ptt-screen">
+      <div class="ptt-status-line">[ VIDEO AGENT ] LONG VIDEO QA TERMINAL</div>
+      <div id="pttHeaderSlot"></div>
+      <div class="ptt-main-grid">
+        <section class="ptt-column ptt-column-left">
+          <div class="ptt-title">[ 視頻管理 ]</div>
+          <div id="pttSidebarSlot"></div>
+        </section>
+
+        <section class="ptt-column ptt-column-right">
+          <div class="ptt-title">[ 問答主控台 ]</div>
+          <div id="pttContentSlot"></div>
+          <div class="ptt-title">[ 系統日誌 ]</div>
+          <div id="pttLogSlot"></div>
+        </section>
+      </div>
+      <div class="ptt-footer-line">输入 BOT 可返回 MODERN 介面</div>
+    </div>
+  </div>
+
+  <div id="sharedBlocks" class="shared-blocks" aria-hidden="true">
+    <header id="sharedHeader" class="app-header panel">
+      <div class="modern-headline">
+        <h1>Video Agent</h1>
+        <div class="muted">PASTEL ASSISTANT</div>
+      </div>
+      <div class="header-tools">
+        <button id="modernSidebarToggleBtn" class="modern-sidebar-toggle" type="button" aria-expanded="true" aria-label="隐藏侧边栏" title="隐藏侧边栏">☰</button>
+        <div id="healthText" class="health">API 检查中...</div>
+        <button id="modernProfileBtn" class="modern-profile-btn" type="button" aria-label="用户菜单">U</button>
+      </div>
+    </header>
+
+    <aside id="sharedSidebar" class="panel sidebar">
+      <div class="sidebar-head">
+        <div class="sidebar-eyebrow">SYSTEM PANEL</div>
+        <h2>视频控制台</h2>
+      </div>
+      <div class="hint sidebar-switch-hint">侧边栏用于切换当前视频窗口（每个视频会话独立保存）。</div>
+
+      <form id="uploadJobForm" class="form-block sidebar-upload-form">
+        <label>
+          视频文件
+          <input id="uploadFile" type="file" accept="video/*" required />
+        </label>
+
+        <label>
+          输出目录（output_root）
+          <input id="uploadOutputRoot" type="text" value="outputs/api_jobs" />
+        </label>
+
+        <div class="row">
+          <label class="checkbox"><input id="uploadMysteryMode" type="checkbox" /> 悬疑模式</label>
+          <label class="checkbox"><input id="uploadResume" type="checkbox" checked /> 断点续跑</label>
+        </div>
+
+        <button id="uploadBtn" type="submit">上传并开始分析</button>
+        <div class="hint">上传文件保存目录：项目根目录/DataBase</div>
+      </form>
+
+      <div class="status-card">
+        <div><strong>当前视频：</strong><span id="selectedJobText">未选择</span></div>
+        <div id="jobStateText" class="muted">请先上传视频创建会话</div>
+      </div>
+
+      <div class="toolbar sidebar-primary-toolbar">
+        <button id="refreshJobsBtn" type="button">刷新视频</button>
+        <button id="togglePollBtn" type="button">自动刷新：OFF</button>
+        <button id="sidebarUploadTriggerBtn" class="toolbar-accent-btn" type="button">上传视频</button>
+      </div>
+      <input id="sidebarUploadInput" type="file" accept="video/*" hidden />
+
+      <label for="jobsSelect" class="label-inline">视频列表</label>
+      <div class="jobs-list-hint muted">左键切换视频，右键可删除分析失败或已取消的视频任务</div>
+      <div id="jobsList" class="jobs-list" aria-label="视频列表"></div>
+      <select id="jobsSelect" size="8"></select>
+
+      <div class="toolbar wrap sidebar-advanced-actions">
+        <button id="refreshDetailBtn" type="button">刷新详情</button>
+        <button id="refreshSummaryBtn" type="button">刷新摘要</button>
+        <button id="fetchResultBtn" type="button">结果路径</button>
+        <button id="cancelJobBtn" type="button" class="danger">取消分析</button>
+      </div>
+
+      <pre id="jobResultPre" class="mini-pre sidebar-result-preview">{}</pre>
+    </aside>
+
+    <section id="sharedContent" class="panel content">
+      <div class="content-top">
+        <div>
+          <h2>视频问答</h2>
+          <div id="qaStateText" class="muted">请选择视频，分析完成后可提问</div>
+        </div>
+      </div>
+
+      <div id="modernHero" class="modern-hero">
+        <p class="modern-hero-kicker">VIDEO ANALYSIS BOT</p>
+        <h2>今天想拆解哪段视频？</h2>
+        <p>先在左侧选择视频，再直接输入你想要的分析提示词或问题，例如人物动机、时间线、反转点或证据链。</p>
+      </div>
+
+      <div class="bot-pixel-pet-row" aria-hidden="true">
+        <div id="botPixelSpider" class="bot-pixel-spider" title="左右拖拽我试试">
+          <span class="bot-pixel-spider-thread"></span>
+          <span class="bot-pixel-spider-leg bot-pixel-spider-leg-left"></span>
+          <span class="bot-pixel-spider-leg bot-pixel-spider-leg-right"></span>
+          <span class="bot-pixel-spider-body"></span>
+          <span class="bot-pixel-spider-eyes"></span>
+          <span class="bot-pixel-spider-blush"></span>
+        </div>
+      </div>
+
+      <div id="chatFeed" class="chat-feed"></div>
+
+      <div class="qa-dock">
+        <form id="qaForm" class="qa-form">
+          <div class="qa-composer-head">
+            <div class="qa-shortcut">Ctrl / Cmd + Enter 发送</div>
+          </div>
+          <div class="gemini-input-shell">
+            <textarea id="questionInput" rows="4" placeholder="输入问题" required></textarea>
+            <div class="gemini-input-actions">
+              <label class="gemini-mode-shell" for="qaMysteryModeSelect">
+                <span class="gemini-mode-label">问答模式</span>
+                <select id="qaMysteryModeSelect" class="gemini-mode-select" aria-label="问答模式">
+                  <option value="">跟随视频</option>
+                  <option value="true">悬疑模式</option>
+                  <option value="false">普通模式</option>
+                </select>
+              </label>
+              <button id="askBtn" class="gemini-send-btn" type="submit" aria-label="发送">发送</button>
+            </div>
+          </div>
+        </form>
+
+        <div id="qaProgressPanel" class="qa-progress-panel" data-stage-tone="idle">
+          <div class="qa-progress-head">
+            <div class="qa-progress-copy">
+              <span class="qa-progress-title">当前视频</span>
+              <strong id="progressVideoName" class="qa-progress-video">未选择视频</strong>
+            </div>
+            <div class="qa-progress-badge">
+              <span id="progressStageText" class="qa-progress-stage">等待选择</span>
+              <span id="progressText" class="muted">0%</span>
+            </div>
+          </div>
+          <div class="qa-stage-strip" aria-hidden="true">
+            <span class="qa-stage-node" data-step="1"></span>
+            <span class="qa-stage-node" data-step="2"></span>
+            <span class="qa-stage-node" data-step="3"></span>
+            <span class="qa-stage-node" data-step="4"></span>
+            <span class="qa-stage-node" data-step="5"></span>
+            <span class="qa-stage-node" data-step="6"></span>
+          </div>
+          <div id="progressMetaText" class="qa-progress-meta">选择一个视频后，这里会显示当前阶段和进度。</div>
+        </div>
+      </div>
+
+      <div class="summary-box">
+        <div class="summary-head">
+          <strong>摘要预览</strong>
+          <button id="refreshSummaryInlineBtn" type="button">刷新</button>
+        </div>
+        <div id="summaryRendered" class="summary-rendered"></div>
+      </div>
+    </section>
+
+    <section id="sharedLog" class="panel log-panel">
+      <h2>系统日志</h2>
+      <pre id="consoleLog" class="log-pre"></pre>
+    </section>
+  </div>
+
+
+  <div id="themeTransitionOverlay" class="theme-transition-overlay" aria-hidden="true">
+    <canvas id="themeTransitionCanvas" class="theme-transition-canvas" aria-hidden="true"></canvas>
+    <div id="themeTransitionQuote" class="theme-transition-quote"></div>
+  </div>
+
+  <div id="jobContextMenu" class="job-context-menu" hidden aria-hidden="true">
+    <button id="jobContextDeleteBtn" class="job-context-action danger" type="button">彻底删除失败视频</button>
+  </div>
+
+  <div id="jobDeleteDialog" class="dialog-backdrop" hidden aria-hidden="true">
+    <div class="dialog-panel" role="dialog" aria-modal="true" aria-labelledby="jobDeleteDialogTitle">
+      <div class="dialog-eyebrow">危险操作</div>
+      <h3 id="jobDeleteDialogTitle">彻底删除当前视频任务？</h3>
+      <p id="jobDeleteDialogText" class="muted">这会同步删除后端任务记录、切片和上传源文件。</p>
+      <div class="dialog-actions">
+        <button id="jobDeleteCancelBtn" type="button">取消</button>
+        <button id="jobDeleteConfirmBtn" type="button" class="danger">彻底删除</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/ui/app.js?v=20260404j"></script>
+</body>
+</html>

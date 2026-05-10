@@ -1,0 +1,11 @@
+{
+  "enable_model_staging": true,
+  "model_staging_dir": "/var/tmp/long_video_pipeline_model_cache",
+  "startup_warmup_mode": "background",
+  "startup_warm_models": true,
+  "startup_preload_qa": true,
+  "keep_qa_ready_after_job": true,
+  "enable_parallel_loading": true,
+  "parallel_loading_workers": 4,
+  "allow_embedding_download": false
+}
