@@ -1,0 +1,10 @@
+# Ignore everything by default.
+*
+# Keep directories visible so allow rules can match nested files.
+!*/
+# Keep repo metadata.
+!.gitignore
+# Only track project source/docs/scripts under selected work trees.
+models/
+outputs/
+DataBase/
