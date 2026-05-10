@@ -28,7 +28,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 # 这里的 `/` 不是数学除法，而是 `pathlib.Path` 重载后的“拼接路径”写法。
 # 例如 `PROJECT_ROOT / "models"` 会得到 `LLM_Project/models`。
-MODELS_DIR = PROJECT_ROOT / "models"
+MODELS_DIR = '/home/hacksong/models'
 DEFAULT_DATABASE_DIR = PROJECT_ROOT / "DataBase"
 RUNTIME_PROFILE_PATH = PROJECT_ROOT / "service_runtime.json"
 
